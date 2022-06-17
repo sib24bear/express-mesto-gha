@@ -1,9 +1,9 @@
 const User = require('../models/user');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.status(200).send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Проблема с сервером' }));
+    .catch(next);
 };
 
 module.exports.getUserById = (req, res, next) => {
@@ -14,7 +14,7 @@ module.exports.getUserById = (req, res, next) => {
       }
       res.status(200).send({ data: user });
     })
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -22,10 +22,10 @@ module.exports.createUser = (req, res, next) => {
 
   User.create({ name, about, avatar })
     .then((users) => res.status(200).send({ data: users }))
-    .catch((err) => next(err));
+    .catch(next);
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(
@@ -35,22 +35,17 @@ module.exports.updateUser = (req, res) => {
       new: true,
       runValidators: true,
     },
-    (err, user) => {
-      if (!err) {
-        return res.status(200).send({ data: user });
+  )
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
       }
-      if (!user && err.path === '_id') {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      if (!user && err.name === 'CastError') {
-        return res.status(400).send({ message: 'Переданы некорректные данные' });
-      }
-      return res.status(500).send({ message: 'Проблема с сервером' });
-    },
-  );
+      res.status(200).send({ data: user });
+    })
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -60,17 +55,12 @@ module.exports.updateAvatar = (req, res) => {
       new: true,
       runValidators: true,
     },
-    (err, user) => {
-      if (!err) {
-        return res.status(200).send({ data: user });
+  )
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
       }
-      if (!user && err.path === '_id') {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      if (!user && err.name === 'CastError') {
-        return res.status(400).send({ message: 'Переданы некорректные данные' });
-      }
-      return res.status(500).send({ message: 'Проблема с сервером' });
-    },
-  );
+      res.status(200).send({ data: user });
+    })
+    .catch(next);
 };

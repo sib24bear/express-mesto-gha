@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -23,13 +22,14 @@ app.use('/users', require('./routes/users'));
 
 app.use('/cards', require('./routes/cards'));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use((req, res) => {
+  res.status(404).send({ message: 'Страница не существует' });
+});
+
 // eslint-disable-next-line
-app.use(function (err, req, res, next) {
-  if (err.name === 'ValidationError') {
+app.use((err, req, res, next) => {
+  if (err.name === 'ValidationError' || err.name === 'CastError') {
     res.status(400).send({ message: 'Переданы некорректные данные' });
-  } else if (err.name === 'CastError') {
-    res.status(404).send({ message: 'Пользователь не найден' });
   }
   res.status(500).send({ message: 'Проблема с сервером' });
 });
