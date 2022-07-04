@@ -133,7 +133,7 @@ module.exports.login = (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       })
-        .send(token);
+        .send({ token });
     })
     .catch(next);
 };
