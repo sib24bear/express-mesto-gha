@@ -1,28 +1,34 @@
 const Card = require('../models/card');
+const { ForbiddenError } = require('../errors/ForbiddenError');
+const { NotFoundError } = require('../errors/NotFoundError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.status(200).send({ data: cards }))
+    .then((cards) => res.send({ data: cards }))
     .catch(next);
 };
 
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user.id })
-    .then((cards) => res.status(200).send({ data: cards }))
-    .catch((err) => next(err));
+    .then((cards) => res.send({ data: cards }))
+    .catch(next);
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((cards) => {
       if (cards.owner.toString() !== req.user.id) {
-        res.status(403).send({ message: 'Нет прав для удаления этой карточки.' });
+        next(new ForbiddenError('Нет прав для удаления этой карточки.'));
+        return;
       }
       if (!cards) {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+        next(new NotFoundError('Карточка с указанным id не найдена'));
+        return;
       }
-      res.status(200).send({ data: cards });
+      Card.findByIdAndRemove(req.params.cardId)
+        .then((card) => res.send({ data: card }))
+        .catch(next);
     })
     .catch(next);
 };
@@ -35,9 +41,10 @@ module.exports.likeCard = (req, res, next) => {
   )
     .then((cards) => {
       if (!cards) {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+        next(new NotFoundError('Карточка с указанным id не найдена'));
+        return;
       }
-      res.status(200).send({ data: cards });
+      res.send({ data: cards });
     })
     .catch(next);
 };
@@ -50,9 +57,10 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .then((cards) => {
       if (!cards) {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+        next(new NotFoundError('Карточка с указанным id не найдена'));
+        return;
       }
-      res.status(200).send({ data: cards });
+      res.send({ data: cards });
     })
     .catch(next);
 };
