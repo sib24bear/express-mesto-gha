@@ -57,7 +57,7 @@ app.use(errors());
 
 // eslint-disable-next-line
 app.use((err, req, res, next) => {
-  if (err.name === 'ValidationError' || err.name === 'CastError' || err.err.statusCode === 400) {
+  if (err.name === 'ValidationError' || err.name === 'CastError' || err.statusCode === 400) {
     res.status(err.statusCode).send({ message: err.message });
   }
   if (err.statusCode === 401) {
