@@ -90,9 +90,16 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => {
       User.create({
         email, password: hash, name, about, avatar,
-      });
+      })
+        .then((user) => res.status(201).send({
+          email: user.email,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          _id: user._id,
+        }))
+        .catch(next);
     })
-    .then(() => res.status(201).send({ message: 'Пользователь создан' }))
     .catch(next);
 };
 
@@ -106,19 +113,19 @@ module.exports.login = (req, res, next) => {
         next(new UnauthorizedError('Не правильный email или пароль'));
         return;
       }
-
-      Promise.all([
+      // eslint-disable-next-line
+      return (Promise.all([
         user,
         bcrypt.compare(password, user.password),
-      ]);
+      ]));
     })
     .then(([user, isPasswordSuccess]) => {
       if (!isPasswordSuccess) {
         next(new UnauthorizedError('Не правильный email или пароль'));
         return;
       }
-
-      jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+      // eslint-disable-next-line
+      return (jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: '7d' }));
     })
     .then((token) => {
       res.cookie('token', token, {
