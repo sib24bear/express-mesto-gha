@@ -39,7 +39,7 @@ module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(
-    req.user._id,
+    req.user.id,
     { name, about },
     {
       new: true,
@@ -60,7 +60,7 @@ module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
-    req.user._id,
+    req.user.id,
     { avatar },
     {
       new: true,
