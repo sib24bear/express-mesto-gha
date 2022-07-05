@@ -7,7 +7,7 @@ const {
 
 const paramsValid = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24),
+    cardId: Joi.string().hex().length(24),
   }),
 });
 
